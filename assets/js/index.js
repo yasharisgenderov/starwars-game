@@ -33,8 +33,7 @@ class StarWars {
   attacker;
   combatants = [];
   defender;
-  turnCounter = 1;
-  killCount = 0;
+  counter = 1;
 
   chooseCharacter(hero, showArea) {
     var heroDiv = $(`<div class='character' data-hero='${hero.name}'>`);
@@ -79,7 +78,7 @@ class StarWars {
     gameMessageSection.append(gameMessage);
   }
 
-  clearMessage() {
+  deleteMessageSection() {
     var messageSection = $("#game-message");
     messageSection.text("");
   }
@@ -111,18 +110,39 @@ $("#available-to-attack-section").on("click", ".character", function () {
     starGame.chooseHero(starGame.defender, "#defender");
 
     $(this).remove();
-    starGame.clearMessage();
+    if(starGame.defender){
+      $("#available-to-attack-section").off("click")
+    }
   }
 });
 
 $("#attack-button").on("click", function () {
-  starGame.turnCounter++;
-  starGame.defender.health -= starGame.attacker.attack * starGame.turnCounter;
-  starGame.attacker.health -= starGame.defender.attack;
-  starGame.chooseHero(starGame.attacker, "#selected-character");
-  starGame.chooseHero(starGame.defender, "#defender");
-  if (starGame.defender.health <= 0 || starGame.attacker.health <= 0) {
-    starGame.restartGame();
-    $("#attack-button").off("click");
+  starGame.counter++;
+  starGame.attacker.health -= starGame.defender.attack * starGame.counter;
+  starGame.defender.health -= starGame.defender.attack * starGame.counter;
+  var attackerMessage = `${starGame.attacker.name} attacked ${starGame.defender.name} for ${starGame.attacker.attack * starGame.counter} damage `
+  var defenderMessage = `${starGame.defender.name} attacked ${starGame.attacker.name} for ${starGame.defender.attack} damage `
+  starGame.deleteMessageSection()
+ 
+
+  if(starGame.attacker.health>=0 || starGame.defender.health >= 0){
+    starGame.displayMessage(attackerMessage)
+    starGame.displayMessage(defenderMessage)
+    starGame.chooseHero(starGame.attacker,"#selected-character")
+    starGame.chooseHero(starGame.defender,"#defender")
+  }
+
+
+  if(starGame.attacker.health<=0 || starGame.defender.health <= 0){
+    if(starGame.attacker.health>starGame.defender.health){
+      var restartMessage = `${starGame.attacker.name} wins. Restart the game`
+      starGame.displayMessage(restartMessage)
+    }
+    else if(starGame.defender.health>starGame.attacker.health){
+      var restartMessage = `${starGame.defender.name} wins. Restart the game`
+      starGame.displayMessage(restartMessage)
+    }
+    starGame.restartGame()
+    $("#attack-button").off("click")
   }
 });
